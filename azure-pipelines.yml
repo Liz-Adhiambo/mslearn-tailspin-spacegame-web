@@ -1,7 +1,5 @@
-# ASP.NET
-# Build and test ASP.NET projects.
-# Add steps that publish symbols, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
 
 trigger:
 - main
@@ -13,22 +11,29 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  projectPath: 'Tailspin.SpaceGame.Web/Tailspin.SpaceGame.Web.csproj'
 
 steps:
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK'
   inputs:
-    restoreSolution: '$(solution)'
+    packageType: 'sdk'
+    version: '8.0.x'
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+- script: dotnet restore $(solution)
+  displayName: 'Restore NuGet packages'
 
-- task: VSTest@2
+- script: dotnet build $(solution) --configuration $(buildConfiguration)
+  displayName: 'Build the solution'
+
+- script: dotnet test $(solution) --configuration $(buildConfiguration) --no-build
+  displayName: 'Run tests'
+
+- script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+  displayName: 'Publish the application'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish artifacts'
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'

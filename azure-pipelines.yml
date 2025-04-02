@@ -20,13 +20,13 @@ steps:
     packageType: 'sdk'
     version: '8.0.x'
 
-- script: dotnet restore $(solution)
+- script: dotnet restore '**/*.csproj'
   displayName: 'Restore NuGet packages'
 
-- script: dotnet build $(solution) --configuration $(buildConfiguration)
+- script: dotnet build '**/*.csproj' --configuration $(buildConfiguration)
   displayName: 'Build the solution'
 
-- script: dotnet test $(solution) --configuration $(buildConfiguration) --no-build
+- script: dotnet test '**/*.csproj' --configuration $(buildConfiguration) --no-build
   displayName: 'Run tests'
 
 - script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
